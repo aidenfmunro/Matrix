@@ -1,14 +1,17 @@
 #ifndef MATRIX_HPP
 #define MATRIX_HPP
 
-#include "buffer.hpp" // Buffer
-#include "proxyrow.hpp" // ProxyRow
+#include "detail/buffer.hpp" // Buffer
+#include "detail/proxyrow.hpp" // ProxyRow
+
+namespace matrix
+{
 
 template<class T> 
 class Matrix
 {
 private:
-    Buffer<T> data_;
+    detail::Buffer<T> data_;
     size_t rows_;
     size_t cols_;
 
@@ -35,28 +38,33 @@ public:
         data_(dim, dim, value) {}
 
 
-    ProxyRow<T> operator[](size_t index)
+    detail::ProxyRow<T> operator[](size_t index)
     {
-        return ProxyRow<T>(data_[index]);
+        return detail::ProxyRow<T>(data_[index]);
     }
 
     T det() const
     {
-        dump();
+        if (rows_ != cols_)
+        {
+            std::cerr << "can't count determinant!";
 
+            return T{};
+        }
+#ifdef DEBUG 
+        dump();
+#endif
         size_t swapCount = 0;
         
         Matrix matrixCopy(*this);
-       
-        matrixCopy.dump();
         
         if (!matrixCopy.gaussianElimination(swapCount))
         {
             return 0;
         }
-
+#ifdef DEBUG
         matrixCopy.dump();
-
+#endif
         T det = 1;
 
         for (size_t i = 0; i < cols_; ++i)
@@ -132,8 +140,9 @@ private:
             }
 
             (*this).eliminateColumn(iRow);
-
+#ifdef DEBUG
             (*this).dump();
+#endif
         }
 
         return true; 
@@ -153,5 +162,7 @@ private:
     }
 
 };
+
+} // namespace matrix
 
 #endif // MATRIX_HPP

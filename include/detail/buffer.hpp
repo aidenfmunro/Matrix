@@ -6,6 +6,13 @@
 #include <utility> // move
 #include "proxyrow.hpp" // ProxyRow
 
+namespace matrix
+
+{
+
+namespace detail
+{
+
 template<class T>
 class Buffer
 {
@@ -90,5 +97,9 @@ public:
         return ProxyRow<T>(data_ + index * cols_);
     }
 };
+
+} // namespace detail
+
+} // namespace matrix
 
 #endif // BUFFER_HPP

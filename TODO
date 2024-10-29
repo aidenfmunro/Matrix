@@ -1,4 +1,5 @@
 [] CI
-[] Det calculation
+[+] Det calculation
 [] Improve Cmake
 [] Matrix & tests
+[] Readme (conan, venv, cmake)

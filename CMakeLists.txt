@@ -23,6 +23,7 @@ target_link_libraries(tests
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     message(STATUS "Debug build")
+    target_compile_definitions(tests PRIVATE DEBUG)
     target_compile_options(tests PRIVATE ${DEBUG_COMPILE_FLAGS})
     target_link_options(tests PRIVATE ${DEBUG_COMPILE_FLAGS})
 endif()

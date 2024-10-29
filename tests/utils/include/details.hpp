@@ -36,7 +36,7 @@ double getResult(const std::string& datFilePath)
 
     inputFile >> dim;
 
-    Matrix<double> matrix(dim);
+    matrix::Matrix<double> matrix(dim);
 
     for (size_t i = 0; i < dim; ++i)
     {
