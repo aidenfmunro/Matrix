@@ -8,9 +8,18 @@ include(cmake/CompileFlags.cmake)
 
 
 find_package(GTest REQUIRED)
-add_executable(tests tests/test_buffer.cpp)
-target_include_directories(tests PUBLIC include)
-target_link_libraries(tests GTest::gtest GTest::gtest_main)
+
+add_executable(tests tests/source/test_matrix.cpp tests/main.cpp)
+
+target_include_directories(tests PRIVATE
+	${CMAKE_SOURCE_DIR}/tests/utils/include
+	${CMAKE_SOURCE_DIR}/include
+)
+
+target_link_libraries(tests
+   GTest::gtest 
+   GTest::gtest_main
+)
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     message(STATUS "Debug build")
