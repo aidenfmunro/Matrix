@@ -10,7 +10,7 @@ protected:
 
     constexpr static int value_ = 1000 - 7;
 
-    Buffer<int> buffer_{rows_, cols_, value_};
+    matrix::detail::Buffer<int> buffer_{rows_, cols_, value_};
 };
 
 TEST_F(BufferTest, ConstructorInitializesWithValue)
@@ -26,7 +26,7 @@ TEST_F(BufferTest, ConstructorInitializesWithValue)
 
 TEST_F(BufferTest, CopyConstructorCreatesDeepCopy)
 {
-    Buffer<int> BufferCopy{buffer_};
+    matrix::detail::Buffer<int> BufferCopy{buffer_};
 
     for (size_t row = 0; row < rows_; ++row)
     {
@@ -39,7 +39,7 @@ TEST_F(BufferTest, CopyConstructorCreatesDeepCopy)
 
 TEST_F(BufferTest, CopyAssignmentCreatesDeepCopy)
 {
-    Buffer<int> BufferCopy = buffer_;
+    matrix::detail::Buffer<int> BufferCopy = buffer_;
 
     for (size_t row = 0; row < rows_; ++row)
     {
@@ -52,7 +52,7 @@ TEST_F(BufferTest, CopyAssignmentCreatesDeepCopy)
 
 TEST_F(BufferTest, MoveConstructorTransfersOwnership)
 {
-    Buffer<int> BufferMoved{std::move(buffer_)};
+    matrix::detail::Buffer<int> BufferMoved{std::move(buffer_)};
 
     for (size_t row = 0; row < rows_; ++row)
     {
@@ -65,7 +65,7 @@ TEST_F(BufferTest, MoveConstructorTransfersOwnership)
 
 TEST_F(BufferTest, MoveAssignmentTransfersOwnership)
 {
-    Buffer<int> BufferMoved = std::move(buffer_);
+    matrix::detail::Buffer<int> BufferMoved = std::move(buffer_);
 
     for (size_t row = 0; row < rows_; ++row)
     {

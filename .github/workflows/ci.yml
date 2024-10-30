@@ -3,29 +3,51 @@ name: CI
 on:
   push:
     branches:
-      - main
+      - master
   pull_request:
     branches:
-      - main
+      - master
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        compiler: [gcc-11, clang]
+        build_type: [Release]
 
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
 
-    - name: Set up Conan
-      uses: conan-io/conan-center-index@v1
+    - name: Set up Python and install pip dependencies
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'  # Specify the desired Python version
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install conan
+
+    - name: Create Conan profile
+      run: |
+        conan profile detect --force
+
+    - name: Set up GCC 11
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y g++-11
+        sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 90
+        sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-11 90
 
     - name: Install dependencies with Conan
       run: |
-        conan install . --build=missing
+        conan install . --build=missing --output-folder=conan
 
     - name: Configure CMake
       run: |
-        cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
+        cmake -S . -B build -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DCMAKE_TOOLCHAIN_FILE=./conan/conan_toolchain.cmake
+
 
     - name: Build the project
       run: |
@@ -33,5 +55,5 @@ jobs:
 
     - name: Run tests
       run: |
-        cd build && ctest --output-on-failure
+        ctest --test-dir build --output-on-failure
 

@@ -1,5 +1,6 @@
-[] CI
+[+-] CI (on release)
 [+] Det calculation
 [] Improve Cmake
-[] Matrix & tests
-[] Readme (conan, venv, cmake)
+[+] Matrix & tests
+[+] Readme (conan, venv, cmake)
+[] Fix debug mode not working (CI, CMake)
