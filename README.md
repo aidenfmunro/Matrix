@@ -26,6 +26,14 @@ cmake --build build
 cd build
 ```
 
+Unit tests:
+
 ```
 ./tests
+```
+
+Test from stdin:
+
+```
+./matrix
 ```
