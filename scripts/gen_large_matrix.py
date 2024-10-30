@@ -44,11 +44,13 @@ def save_determinant_result(det, filename):
     with open(filename, 'w') as f:
         f.write(f"{det:.5f}\n")
 # Example usage
-size = 100
-target_det = 9  # Set target determinant
+size = 10
+target_det = 10  # Set target determinant
 matrix = generate_matrix_with_determinant(size, target_det)
 
 # Optional: Save matrix to a file if needed
-save_matrix_with_size(matrix, "tests/data/matrix_100x100.dat")
-save_determinant_result(target_det, "tests/data/matrix_100x100.ans")
+file_path = f"tests/data/matrix_{size}x{size}"
+
+save_matrix_with_size(matrix, file_path + ".dat")
+save_determinant_result(target_det, file_path + ".ans")
 

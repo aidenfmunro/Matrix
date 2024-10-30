@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Conan
+      uses: conan-io/conan-center-index@v1
+
+    - name: Install dependencies with Conan
+      run: |
+        conan install . --build=missing
+
+    - name: Configure CMake
+      run: |
+        cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
+
+    - name: Build the project
+      run: |
+        cmake --build build
+
+    - name: Run tests
+      run: |
+        cd build && ctest --output-on-failure
+
