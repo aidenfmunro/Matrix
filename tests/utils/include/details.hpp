@@ -20,6 +20,7 @@ std::string getFullPath(const std::string& relativePath)
     return path.string(); 
 }
 
+template<class T>
 double getResult(const std::string& datFilePath)
 {
     std::ifstream inputFile(datFilePath);
@@ -36,7 +37,7 @@ double getResult(const std::string& datFilePath)
 
     inputFile >> dim;
 
-    matrix::Matrix<double> matrix(dim);
+    matrix::Matrix<T> matrix(dim);
 
     for (size_t i = 0; i < dim; ++i)
     {
@@ -59,6 +60,7 @@ double getAnswer(const std::string& ansFilePath)
         
         return 0.0; 
     }
+
     double answer = 0;
 
     inputFile >> answer;

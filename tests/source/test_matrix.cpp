@@ -2,41 +2,80 @@
 #include "matrix.hpp"
 #include "utils.hpp"
 
-TEST(MatrixTest, SimpleTest1)
+class MatrixTest : public ::testing::Test
 {
-    tests::utils::runTest("test1");
+protected:
+    size_t rows_ = 3;
+    size_t cols_ = 3;
+
+    constexpr static int value_ = 1000 - 7;
+
+    matrix::Matrix<int> matrix_{rows_, cols_, value_};
+};
+
+TEST_F(MatrixTest, isCorrectlyInitialized)
+{
+    for (size_t row = 0; row < rows_; ++row)
+    {
+        for (size_t col = 0; col < cols_; ++col)
+        {
+            EXPECT_EQ(matrix_[row][col], value_);
+        }
+    }
 }
 
-TEST(MatrixTest, SimpleTest2)
+TEST_F(MatrixTest, ElementAccess)
 {
-    tests::utils::runTest("test2");
+    int newValue = 1000;
+    size_t row = 2;
+    size_t col = 3;
+
+    matrix_[row][col] = newValue;
+
+    EXPECT_EQ(matrix_[row][col], newValue);
 }
 
-TEST(MatrixTest, LargeTest1)
+TEST(MatrixDeterminantTest, SimpleTest1)
 {
-    tests::utils::runTest("matrix_100x100");
+    tests::utils::runTest<int>("test1");
 }
 
-TEST(MatrixTest, LargeTest2)
+TEST(MatrixDeterminantTest, SimpleTest2)
 {
-    tests::utils::runTest("matrix_20x20");
+    tests::utils::runTest<int>("test2");
 }
 
-TEST(MatrixTest, LargeTest3)
+TEST(MatrixDeterminantTest, LargeTest1)
 {
-    tests::utils::runTest("matrix_50x50");
+    tests::utils::runTest<double>("matrix_100x100");
 }
 
-TEST(MatrixTest, LargeTest4)
+TEST(MatrixDeterminantTest, LargeTest2)
 {
-    tests::utils::runTest("matrix_99x99");
+    tests::utils::runTest<double>("matrix_99x99");
 }
 
-TEST(MatrixTest, LargeTest5)
+TEST(MatrixDeterminantTest, LargeTest3)
 {
-    tests::utils::runTest("matrix_10x10");
+    tests::utils::runTest<int>("matrix_95x95");
 }
 
+TEST(MatrixDeterminantTest, LargeTest4)
+{
+    tests::utils::runTest<double>("matrix_50x50");
+}
 
+TEST(MatrixDeterminantTest, LargeTest5)
+{
+    tests::utils::runTest<int>("matrix_25x25");
+}
 
+TEST(MatrixDeterminantTest, LargeTest6)
+{
+    tests::utils::runTest<double>("matrix_20x20");
+}
 
+TEST(MatrixDeterminantTest, LargeTest7)
+{
+    tests::utils::runTest<double>("matrix_10x10");
+}

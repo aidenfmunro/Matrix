@@ -1,4 +1,5 @@
 import numpy as np
+import sys
 
 def generate_matrix_with_determinant(size, target_det):
     # Step 1: Initialize diagonal matrix with values that produce the target determinant
@@ -25,13 +26,25 @@ def generate_matrix_with_determinant(size, target_det):
     
     return matrix
 
+def generate_large_integer_matrix(size, min_value=1, max_value=2):
+    # Create a diagonal matrix filled with a mix of ones and twos
+    diagonal_values = np.random.choice([1, 1], size=size)
+    matrix = np.diag(diagonal_values)
+
+    # Randomly add rows to each other to make the matrix appear more random
+    for _ in range(size * 5):  # Perform a number of random additions
+        row1, row2 = np.random.choice(size, 2, replace=False)
+        matrix[row1] += matrix[row2]  # Add row2 to row1
+
+    return matrix
+
 def save_matrix_with_size(matrix, filename):
     size = matrix.shape[0]
     flattened_matrix = matrix.flatten()
 
     with open(filename, 'w') as f:
         flattened_matrix = matrix.flatten()
-        f.write(" ".join(f"{value:.9f}" for value in flattened_matrix))
+        f.write(" ".join(f"{value}" for value in flattened_matrix))
 
     # Read the matrix data we just saved
     with open(filename, 'r+') as f:
@@ -43,14 +56,22 @@ def save_matrix_with_size(matrix, filename):
 def save_determinant_result(det, filename):
     with open(filename, 'w') as f:
         f.write(f"{det:.5f}\n")
-# Example usage
-size = 10
-target_det = 10  # Set target determinant
-matrix = generate_matrix_with_determinant(size, target_det)
 
-# Optional: Save matrix to a file if needed
-file_path = f"tests/data/matrix_{size}x{size}"
+if __name__ == "__main__":
+    # Check for the correct number of command-line arguments
+    if len(sys.argv) != 3:
+        print("Usage: python script.py <size> <target_det>")
+        sys.exit(1)
 
-save_matrix_with_size(matrix, file_path + ".dat")
-save_determinant_result(target_det, file_path + ".ans")
+    # Get the size and target determinant from command-line arguments
+    size = int(sys.argv[1])
+    target_det = int(sys.argv[2])
 
+    # Generate the matrix
+    matrix = generate_large_integer_matrix(size)
+
+    # Optional: Save matrix to a file if needed
+    file_path = f"tests/data/matrix_{size}x{size}"
+
+    save_matrix_with_size(matrix, file_path + ".dat")
+    save_determinant_result(np.linalg.det(matrix), file_path + ".ans")

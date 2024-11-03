@@ -1,6 +1,7 @@
 #ifndef MATRIX_HPP
 #define MATRIX_HPP
 
+#include <cmath> // nan
 #include "detail/buffer.hpp" // Buffer
 #include "detail/proxyrow.hpp" // ProxyRow
 
@@ -43,20 +44,41 @@ public:
         return detail::ProxyRow<T>(data_[index]);
     }
 
-    T det() const
+
+    const detail::ProxyRow<T> operator[](size_t index) const
+    {
+        return detail::ProxyRow<T>(data_[index]);
+    }
+
+    template <typename U>
+    Matrix<U> reinterpret_as() const 
+    {
+        Matrix<U> result(rows_, cols_);
+        for (size_t i = 0; i < rows_; ++i) 
+        {
+            for (size_t j = 0; j < cols_; ++j)
+            {
+                result[i][j] = static_cast<U>((*this)[i][j]); 
+            }
+        }
+
+        return result;
+    }
+
+    double det() const
     {
         if (rows_ != cols_)
         {
             std::cerr << "can't count determinant!";
 
-            return T{};
+            return 0;
         }
 #ifdef DEBUG 
         dump();
 #endif
         size_t swapCount = 0;
         
-        Matrix matrixCopy(*this);
+        Matrix<double> matrixCopy = (*this).reinterpret_as<double>();
         
         if (!matrixCopy.gaussianElimination(swapCount))
         {
@@ -65,7 +87,7 @@ public:
 #ifdef DEBUG
         matrixCopy.dump();
 #endif
-        T det = 1;
+        double det = 1;
 
         for (size_t i = 0; i < cols_; ++i)
         {
@@ -75,6 +97,32 @@ public:
         return (swapCount % 2 == 0) ? det : -det;
     }
     
+    bool gaussianElimination(size_t& swapCount)
+    {
+        for (size_t iRow = 0; iRow < rows_; ++iRow)
+        {
+            size_t pivotRow = (*this).findPivotRow(iRow);
+
+            if ((*this)[pivotRow][iRow] == 0)
+            {
+                return false;
+            }
+
+            if (pivotRow != iRow)
+            {
+                swapRows(iRow, pivotRow);
+                swapCount++;
+            }
+
+            (*this).eliminateColumn(iRow);
+#ifdef DEBUG
+            (*this).dump();
+#endif
+        }
+
+        return true; 
+    }
+
     void dump() const
     {
         for (size_t row = 0; row < rows_; ++row)
@@ -122,37 +170,11 @@ private:
         return maxRow;
     }
 
-    bool gaussianElimination(size_t& swapCount)
-    {
-        for (size_t iRow = 0; iRow < rows_; ++iRow)
-        {
-            size_t pivotRow = (*this).findPivotRow(iRow);
-
-            if ((*this)[pivotRow][iRow] == 0)
-            {
-                return false;
-            }
-
-            if (pivotRow != iRow)
-            {
-                swapRows(iRow, pivotRow);
-                swapCount++;
-            }
-
-            (*this).eliminateColumn(iRow);
-#ifdef DEBUG
-            (*this).dump();
-#endif
-        }
-
-        return true; 
-    }
-
     void eliminateColumn(size_t pivotRow) 
     {
         for (size_t iRow = pivotRow + 1; iRow < rows_; ++iRow)
         {
-            T factor = (*this)[iRow][pivotRow] / (*this)[pivotRow][pivotRow];
+            double factor = (*this)[iRow][pivotRow] / (*this)[pivotRow][pivotRow];
 
             for (int iCol = pivotRow; iCol < cols_; ++iCol) 
             {
