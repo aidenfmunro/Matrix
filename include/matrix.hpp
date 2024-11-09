@@ -38,6 +38,20 @@ public:
         cols_(dim),
         data_(dim, dim, value) {}
 
+    template<typename U>
+    Matrix (const Matrix<U>& other)
+    :   rows_(other.getRows()),
+        cols_(other.getCols()),
+        data_(other.getRows(), other.getCols())
+    {
+        for (size_t i = 0; i < rows_; ++i)
+        {
+            for (size_t j = 0; j < cols_; ++j)
+            {
+                data_[i][j] = static_cast<T>(other[i][j]);
+            }
+        }
+    }
 
     detail::ProxyRow<T> operator[](size_t index)
     {
@@ -50,20 +64,9 @@ public:
         return detail::ProxyRow<T>(data_[index]);
     }
 
-    template <typename U>
-    Matrix<U> reinterpret_as() const 
-    {
-        Matrix<U> result(rows_, cols_);
-        for (size_t i = 0; i < rows_; ++i) 
-        {
-            for (size_t j = 0; j < cols_; ++j)
-            {
-                result[i][j] = static_cast<U>((*this)[i][j]); 
-            }
-        }
+    size_t getRows() const { return rows_; }
 
-        return result;
-    }
+    size_t getCols() const { return cols_; }
 
     double det() const
     {
@@ -78,7 +81,7 @@ public:
 #endif
         size_t swapCount = 0;
         
-        Matrix<double> matrixCopy = (*this).reinterpret_as<double>();
+        Matrix<double> matrixCopy = *this;
         
         if (!matrixCopy.gaussianElimination(swapCount))
         {
@@ -101,9 +104,9 @@ public:
     {
         for (size_t iRow = 0; iRow < rows_; ++iRow)
         {
-            size_t pivotRow = (*this).findPivotRow(iRow);
+            size_t pivotRow = findPivotRow(iRow);
 
-            if ((*this)[pivotRow][iRow] == 0)
+            if (data_[pivotRow][iRow] == 0)
             {
                 return false;
             }
@@ -114,9 +117,9 @@ public:
                 swapCount++;
             }
 
-            (*this).eliminateColumn(iRow);
+            eliminateColumn(iRow);
 #ifdef DEBUG
-            (*this).dump();
+            dump();
 #endif
         }
 
@@ -154,11 +157,11 @@ private:
     {
         size_t maxRow = col;
 
-        T maxElem = std::abs((*this)[col][col]);
+        T maxElem = std::abs(data_[col][col]);
 
         for (size_t iCol = col + 1; iCol < cols_; iCol++)
         {
-            T curElem = std::abs((*this)[iCol][col]);
+            T curElem = std::abs(data_[iCol][col]);
 
             if (curElem > maxElem)
             {
@@ -174,11 +177,11 @@ private:
     {
         for (size_t iRow = pivotRow + 1; iRow < rows_; ++iRow)
         {
-            double factor = (*this)[iRow][pivotRow] / (*this)[pivotRow][pivotRow];
+            double factor = data_[iRow][pivotRow] / data_[pivotRow][pivotRow];
 
             for (int iCol = pivotRow; iCol < cols_; ++iCol) 
             {
-                (*this)[iRow][iCol] -= factor * (*this)[pivotRow][iCol];
+                data_[iRow][iCol] -= factor * data_[pivotRow][iCol];
             }
         }
     }

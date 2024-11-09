@@ -45,6 +45,11 @@ TEST(MatrixDeterminantTest, SimpleTest2)
     tests::utils::runTest<int>("test2");
 }
 
+TEST(MatrixDeterminantTest, SimpleTest3)
+{
+    tests::utils::runTest<int>("test3");
+}
+
 TEST(MatrixDeterminantTest, LargeTest1)
 {
     tests::utils::runTest<double>("matrix_100x100");

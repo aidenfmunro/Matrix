@@ -4,3 +4,9 @@
 [+] Matrix & tests
 [+] Readme (conan, venv, cmake)
 [] Fix debug mode not working (CI, CMake)
+[] Fix incorrect test input
+[] Fix cmake (see review)
+[] Add double comparisson 
+[+] Remove explicit this
+[+] Make reinterpret_as() more syntactically pleasurable 
+[] Add complex numbers support
