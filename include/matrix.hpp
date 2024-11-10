@@ -1,12 +1,17 @@
 #ifndef MATRIX_HPP
 #define MATRIX_HPP
 
-#include <cmath> // nan
-#include "detail/buffer.hpp" // Buffer
-#include "detail/proxyrow.hpp" // ProxyRow
+#include <cmath> // fabs
+#include "buffer.hpp" // Buffer
+#include "proxyrow.hpp" // ProxyRow
+#include "utils.hpp" // isAlmostEqual
 
 namespace matrix
 {
+
+namespace utils
+{
+} // namespace utils
 
 template<class T> 
 class Matrix
@@ -58,7 +63,6 @@ public:
         return detail::ProxyRow<T>(data_[index]);
     }
 
-
     const detail::ProxyRow<T> operator[](size_t index) const
     {
         return detail::ProxyRow<T>(data_[index]);
@@ -76,7 +80,7 @@ public:
 
             return 0;
         }
-#ifdef DEBUG 
+#ifdef ENABLE_LOGGING 
         dump();
 #endif
         size_t swapCount = 0;
@@ -87,7 +91,7 @@ public:
         {
             return 0;
         }
-#ifdef DEBUG
+#ifdef ENABLE_LOGGING
         matrixCopy.dump();
 #endif
         double det = 1;
@@ -106,7 +110,7 @@ public:
         {
             size_t pivotRow = findPivotRow(iRow);
 
-            if (data_[pivotRow][iRow] == 0)
+            if (utils::isAlmostEqual(data_[pivotRow][iRow], 0))
             {
                 return false;
             }
@@ -118,7 +122,7 @@ public:
             }
 
             eliminateColumn(iRow);
-#ifdef DEBUG
+#ifdef ENABLE_LOGGING
             dump();
 #endif
         }
