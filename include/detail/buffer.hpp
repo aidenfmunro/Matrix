@@ -43,9 +43,11 @@ public:
         size_(0), 
         cols_(0)
     {
+        T* newData = nullptr;
+
         try 
         {
-            T* newData = new T[other.size_];
+            newData = new T[other.size_];
 
             std::copy(other.data_, other.data_ + other.size_, newData);
 
@@ -55,10 +57,8 @@ public:
         } 
         catch (...) 
         {
-            delete[] data_;
-            data_ = nullptr;
-            size_ = 0;
-            cols_ = 0;
+            delete[] newData;
+
             throw;
         }
     }
