@@ -38,12 +38,29 @@ public:
         std::fill(data_, data_ + size_, value);
     }
 
-    Buffer(const Buffer& other) 
-    :   data_(new T[other.size_]),
-        size_(other.size_),
-        cols_(other.cols_)
+    Buffer(const Buffer& other)
+    :   data_(nullptr), 
+        size_(0), 
+        cols_(0)
     {
-        std::copy(other.data_, other.data_ + size_, data_);
+        try 
+        {
+            T* newData = new T[other.size_];
+
+            std::copy(other.data_, other.data_ + other.size_, newData);
+
+            data_ = newData;
+            size_ = other.size_;
+            cols_ = other.cols_;
+        } 
+        catch (...) 
+        {
+            delete[] data_;
+            data_ = nullptr;
+            size_ = 0;
+            cols_ = 0;
+            throw;
+        }
     }
 
     Buffer& operator=(const Buffer& other)
@@ -51,13 +68,18 @@ public:
         if (this == &other)
             return *this;
 
-        delete[] data_;
-        
-        size_ = other.size_;
-        cols_ = other.cols_;
+        Buffer tmp(other);
 
+        swap(tmp);
 
-        std::copy(other.data_, other.data_ + size_, data_);
+        return *this;
+    }
+
+    void swap(Buffer& rhs) noexcept
+    {
+        std::swap(data_, rhs.data_);
+        std::swap(size_, rhs.size_);
+        std::swap(cols_, rhs.cols_);
     }
 
     Buffer(Buffer&& other) noexcept 

@@ -49,12 +49,22 @@ public:
         cols_(other.getCols()),
         data_(other.getRows(), other.getCols())
     {
-        for (size_t i = 0; i < rows_; ++i)
+        try 
         {
-            for (size_t j = 0; j < cols_; ++j)
+            for (size_t i = 0; i < rows_; ++i)
             {
-                data_[i][j] = static_cast<T>(other[i][j]);
+                for (size_t j = 0; j < cols_; ++j)
+                {
+                    data_[i][j] = static_cast<T>(other[i][j]);
+                }
             }
+        }
+        catch(...)
+        {
+            rows_ = 0;
+            cols_ = 0;
+
+            throw;
         }
     }
 
