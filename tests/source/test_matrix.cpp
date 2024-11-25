@@ -28,7 +28,7 @@ TEST_F(MatrixTest, ElementAccess)
 {
     int newValue = 1000;
     size_t row = 2;
-    size_t col = 3;
+    size_t col = 2;
 
     matrix_[row][col] = newValue;
 
