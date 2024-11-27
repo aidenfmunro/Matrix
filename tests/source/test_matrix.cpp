@@ -13,6 +13,70 @@ protected:
     matrix::Matrix<int> matrix_{rows_, cols_, value_};
 };
 
+TEST_F(MatrixTest, ConstructorInitializesWithValue)
+{
+    for (size_t row = 0; row < rows_; ++row)
+    {
+        for (size_t col = 0; col < cols_; ++col)
+        {
+            EXPECT_EQ(matrix_[row][col], value_); 
+        }
+    }
+}
+
+TEST_F(MatrixTest, CopyConstructorCreatesDeepCopy)
+{
+    matrix::Matrix<int> mCopy{matrix_};
+
+    for (size_t row = 0; row < rows_; ++row)
+    {
+        for (size_t col = 0; col < cols_; ++col)
+        {
+            EXPECT_EQ(mCopy[row][col], matrix_[row][col]); 
+        }
+    }
+}
+
+TEST_F(MatrixTest, CopyAssignmentCreatesDeepCopy)
+{
+    matrix::Matrix<int> mCopied = matrix_;
+
+    for (size_t row = 0; row < rows_; ++row)
+    {
+        for (size_t col = 0; col < cols_; ++col)
+        {
+            EXPECT_EQ(mCopied[row][col], matrix_[row][col]); 
+        }
+    }
+}
+
+TEST_F(MatrixTest, MoveConstructorTransfersOwnership)
+{
+    matrix::Matrix<int> mMoved{std::move(matrix_)};
+
+    for (size_t row = 0; row < rows_; ++row)
+    {
+        for (size_t col = 0; col < cols_; ++col)
+        {
+            EXPECT_EQ(mMoved[row][col], value_); 
+        }
+    }
+}
+
+TEST_F(MatrixTest, MoveAssignmentTransfersOwnership)
+{
+    matrix::Matrix<int> mMoved = std::move(matrix_);
+
+    for (size_t row = 0; row < rows_; ++row)
+    {
+        for (size_t col = 0; col < cols_; ++col)
+        {
+            EXPECT_EQ(mMoved[row][col], value_); 
+        }
+    }
+}
+
+
 TEST_F(MatrixTest, isCorrectlyInitialized)
 {
     for (size_t row = 0; row < rows_; ++row)

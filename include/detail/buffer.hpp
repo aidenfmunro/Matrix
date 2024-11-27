@@ -18,64 +18,24 @@ template <typename T> void construct(T *p, const T &rhs) { new (p) T(rhs); }
 template<class T>
 class Buffer
 {
-private:
-    size_t size_, cols_, used_ = 0;
+protected:
     T* data_ = nullptr;
+    size_t size_, used_ = 0;
 
-public:
-    Buffer() noexcept = default;
+protected:
+    Buffer(size_t size = 0)
+    :   data_((size == 0) ? nullptr
+                          : static_cast<T *>(::operator new(sizeof(T) * size))),
+        size_(size) {}
 
-    Buffer(size_t rows, size_t cols, const T& value) 
-    :   size_(rows * cols),
-        cols_(cols),
-        data_(static_cast<T*>(operator new(sizeof(T) * size_)))
-    {
-        for (size_t i = 0; i < size_; ++i)
-        {
-            construct(data_ + i, value);
-            ++used_;
-        }
-    }
-   
-    Buffer(size_t dim, const T& value)
-    :   size_(dim * dim),
-        cols_(dim),
-        data_(static_cast<T*>(operator new(sizeof(T) * size_)))
-    {
-        for (size_t i = 0; i < size_; ++i)
-        {
-            construct(data_ + i, value);
-            ++used_;
-        }
-    }
-
-    Buffer(const Buffer& other)
-    :   size_(other.size_), 
-        cols_(other.cols_),
-        used_(other.used_),
-        data_(static_cast<T*>(operator new(sizeof(T) * size_)))
-    {
-        for (size_t i = 0; i < size_; ++i)
-        {
-            construct(data_ + i, other.data_[i]);
-            ++used_;
-        }
-    }
-
-    Buffer& operator=(const Buffer& other)
-    {
-        Buffer tmp(other);
-
-        swap(tmp);
-
-        return *this;
-    }
+    Buffer(const Buffer& ) = delete;
+    
+    Buffer& operator=(const Buffer& ) = delete;
 
     void swap(Buffer& rhs) noexcept
     {
         std::swap(data_, rhs.data_);
         std::swap(size_, rhs.size_);
-        std::swap(cols_, rhs.cols_);
         std::swap(used_, rhs.used_);
     }
 
@@ -107,16 +67,6 @@ public:
 
             data_ = nullptr;
         }
-    }
-    
-    const ProxyRow<T> operator[] (size_t index) const
-    {
-        return ProxyRow<T>(data_ + index * cols_);
-    }
-
-    ProxyRow<T> operator[] (size_t index)
-    {
-        return ProxyRow<T>(data_ + index * cols_);
     }
 };
 

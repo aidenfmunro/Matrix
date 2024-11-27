@@ -5,6 +5,7 @@
 #include "buffer.hpp" // Buffer
 #include "proxyrow.hpp" // ProxyRow
 #include "utils.hpp" // isAlmostEqual
+#include <iostream> // cerr
 
 namespace matrix
 {
@@ -14,58 +15,114 @@ namespace utils
 } // namespace utils
 
 template<class T> 
-class Matrix
+class Matrix : private detail::Buffer<T>
 {
+public:
+    using detail::Buffer<T>::data_;
+    using detail::Buffer<T>::size_;
+    using detail::Buffer<T>::used_;
+
 private:
-    detail::Buffer<T> data_;
     size_t rows_;
     size_t cols_;
 
 public:
-    
     Matrix(size_t rows, size_t cols)
-    :   rows_(rows),
-        cols_(cols),
-        data_(rows, cols, T{}) {}
+    :   detail::Buffer<T>(rows * cols),
+        rows_(rows),
+        cols_(cols) {}
 
     Matrix(size_t rows, size_t cols, const T& value)
-    :   rows_(rows),
-        cols_(cols),
-        data_(rows, cols, value) {}
+    :   detail::Buffer<T>(rows * cols),
+        rows_(rows),
+        cols_(cols) 
+    {
+        for (size_t id = 0; id < size_; ++id)
+        {
+            detail::construct(data_ + used_, value);
+            used_ += 1;
+        }
+    }
 
     Matrix(size_t dim)
-    :   rows_(dim),
-        cols_(dim),
-        data_(dim, dim, T{}) {}
+    :   detail::Buffer<T>(dim * dim),
+        rows_(dim),
+        cols_(dim) 
+    {
+        for (size_t id = 0; id < size_; ++id)
+        {
+            detail::construct(data_ + used_, T{});
+            used_ += 1;
+        }
+    }
 
     Matrix(size_t dim, const T& value)
-    :   rows_(dim),
-        cols_(dim),
-        data_(dim, dim, value) {}
+    :   detail::Buffer<T>(dim * dim),
+        rows_(dim),
+        cols_(dim)
+    {
+        for (size_t id = 0; id < size_; ++id)
+        {
+            detail::construct(data_ + used_, value);
+            used_ += 1;
+        }
+    }
+
+    Matrix(Matrix&& rhs) = default;
+    Matrix& operator=(Matrix&& rhs) = default;
+
+    Matrix(const Matrix& rhs)
+    :   detail::Buffer<T>(rhs.used_),
+        rows_(rhs.rows_),
+        cols_(rhs.cols_)
+    {
+        while (used_ < rhs.used_) 
+        {
+            detail::construct(data_ + used_, rhs.data_[used_]);
+            used_ += 1;
+        }
+    }
+
+    Matrix& operator=(const Matrix& rhs) 
+    {
+        Matrix tmp(rhs);
+        std::swap(*this, tmp);
+        return *this;
+    }
 
     template<typename U>
     Matrix (const Matrix<U>& other)
-    :   rows_(other.getRows()),
-        cols_(other.getCols()),
-        data_(other.getRows(), other.getCols())
+    :   detail::Buffer<T>(other.getRows() * other.getCols()),
+        rows_(other.getRows()),
+        cols_(other.getCols())
     {
         for (size_t i = 0; i < rows_; ++i)
         {
             for (size_t j = 0; j < cols_; ++j)
             {
-                data_[i][j] = static_cast<T>(other[i][j]);
+                at(i, j) = static_cast<T>(other.at(i, j));
             }
         }
     }
 
-    detail::ProxyRow<T> operator[](size_t index)
+    const detail::ProxyRow<T> operator[] (size_t index) const
     {
-        return detail::ProxyRow<T>(data_[index]);
+        return detail::ProxyRow<T>(data_ + index * cols_);
     }
 
-    const detail::ProxyRow<T> operator[](size_t index) const
+    detail::ProxyRow<T> operator[] (size_t index)
     {
-        return detail::ProxyRow<T>(data_[index]);
+        return detail::ProxyRow<T>(data_ + index * cols_);
+    }
+
+    T& at(size_t row, size_t col) 
+    {
+        return data_[row * cols_ + col];
+    }
+
+    const T& at(size_t row, size_t col) const 
+    {
+        return data_[row * cols_ + col];
     }
 
     size_t getRows() const { return rows_; }
@@ -77,7 +134,6 @@ public:
         if (rows_ != cols_)
         {
             std::cerr << "can't count determinant!";
-
             return 0;
         }
 #ifdef ENABLE_LOGGING 
@@ -98,7 +154,7 @@ public:
 
         for (size_t i = 0; i < cols_; ++i)
         {
-            det *= matrixCopy[i][i];
+            det *= matrixCopy.at(i, i);
         }
 
         return (swapCount % 2 == 0) ? det : -det;
@@ -110,7 +166,7 @@ public:
         {
             size_t pivotRow = findPivotRow(iRow);
 
-            if (utils::isAlmostEqual(data_[pivotRow][iRow], 0))
+            if (utils::isAlmostEqual(at(pivotRow, iRow), 0))
             {
                 return false;
             }
@@ -136,7 +192,7 @@ public:
         {
             for (size_t col = 0; col < cols_; ++col)
             {
-                 std::cerr << data_[row][col] << " ";
+                 std::cerr << at(row, col) << " ";
             }
             
             std::cerr << "\n";
@@ -153,7 +209,7 @@ private:
 
         for (size_t col = 0; col < cols_; ++col)
         {
-            std::swap(data_[row1][col], data_[row2][col]);
+            std::swap(at(row1, col), at(row2, col));
         }
     }
 
@@ -161,11 +217,11 @@ private:
     {
         size_t maxRow = col;
 
-        T maxElem = std::abs(data_[col][col]);
+        T maxElem = std::abs(at(col, col));
 
         for (size_t iCol = col + 1; iCol < cols_; iCol++)
         {
-            T curElem = std::abs(data_[iCol][col]);
+            T curElem = std::abs(at(iCol, col));
 
             if (curElem > maxElem)
             {
@@ -181,11 +237,11 @@ private:
     {
         for (size_t iRow = pivotRow + 1; iRow < rows_; ++iRow)
         {
-            double factor = data_[iRow][pivotRow] / data_[pivotRow][pivotRow];
+            double factor = at(iRow, pivotRow) / at(pivotRow, pivotRow);
 
             for (int iCol = pivotRow; iCol < cols_; ++iCol) 
             {
-                data_[iRow][iCol] -= factor * data_[pivotRow][iCol];
+                at(iRow, iCol) -= factor * at(pivotRow, iCol);
             }
         }
     }
@@ -195,3 +251,4 @@ private:
 } // namespace matrix
 
 #endif // MATRIX_HPP
+

@@ -19,7 +19,7 @@ if(ENABLE_LOGGING)
     target_compile_definitions(matrix.x PRIVATE ENABLE_LOGGING)
 endif()
 
-add_executable(tests tests/source/test_matrix.cpp tests/source/test_buffer.cpp tests/main.cpp)
+add_executable(tests tests/source/test_matrix.cpp tests/main.cpp)
 
 target_compile_features(tests PUBLIC cxx_std_20)
 
