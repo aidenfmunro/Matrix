@@ -1,33 +1,25 @@
+#include <iostream>
 #include "matrix.hpp"
 
-#include <exception>
-#include <iostream>
+int main()
+{
+    int dim = 0;
+    std::cin >> dim;
 
-struct MyInt {
-    int x;
-    MyInt(int x = 0) : x(x) {}
+    if (dim <= 0)
+    {
+        std::cerr << "Incorrect input, size of matrix must be positive" << std::endl;
 
-    MyInt (const MyInt &MI) {
-        static int idx = 1;
-
-        if (idx == 17)
-            throw std::runtime_error("except");
-        idx++;
-    }    
-
-    MyInt(MyInt &&) = delete;
-
-    MyInt &operator=(const MyInt &) = delete;
-    MyInt &operator=(MyInt &&) = delete; 
-
-    ~MyInt() = default;
-};
-
-int main() {
-    matrix::Matrix<MyInt> x(4, 4, 5);
-    try {
-        matrix::Matrix<MyInt> y(x);
-    } catch(std::runtime_error &Err) {
-        std::cerr << Err.what() << std::endl;
+        return 1;
     }
+
+    matrix::Matrix<double> matrix(static_cast<size_t>(dim));
+
+    for (size_t row = 0; row < dim; ++row)
+        for (size_t col = 0; col < dim; ++col)
+            std::cin >> matrix[row][col];
+
+    std::cout << matrix.det() << '\n';
+
+    return 0;
 }
