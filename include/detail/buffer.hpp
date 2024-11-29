@@ -5,7 +5,6 @@
 #include <algorithm> // fill, copy
 #include <sys/types.h>
 #include <utility> // move
-#include "proxyrow.hpp" // ProxyRow
 
 namespace matrix
 {
@@ -64,8 +63,6 @@ protected:
             }
 
             operator delete(data_);
-
-            data_ = nullptr;
         }
     }
 };

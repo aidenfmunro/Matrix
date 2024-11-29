@@ -6,6 +6,7 @@
 #include "proxyrow.hpp" // ProxyRow
 #include "utils.hpp" // isAlmostEqual
 #include <iostream> // cerr
+#include <stdexcept>
 
 namespace matrix
 {
@@ -23,31 +24,12 @@ public:
     using detail::Buffer<T>::used_;
 
 private:
-    size_t rows_;
-    size_t cols_;
+    size_t dim_;
 
 public:
-    Matrix(size_t rows, size_t cols)
-    :   detail::Buffer<T>(rows * cols),
-        rows_(rows),
-        cols_(cols) {}
-
-    Matrix(size_t rows, size_t cols, const T& value)
-    :   detail::Buffer<T>(rows * cols),
-        rows_(rows),
-        cols_(cols) 
-    {
-        for (size_t id = 0; id < size_; ++id)
-        {
-            detail::construct(data_ + used_, value);
-            used_ += 1;
-        }
-    }
-
     Matrix(size_t dim)
     :   detail::Buffer<T>(dim * dim),
-        rows_(dim),
-        cols_(dim) 
+        dim_(dim)
     {
         for (size_t id = 0; id < size_; ++id)
         {
@@ -58,8 +40,7 @@ public:
 
     Matrix(size_t dim, const T& value)
     :   detail::Buffer<T>(dim * dim),
-        rows_(dim),
-        cols_(dim)
+        dim_(dim)
     {
         for (size_t id = 0; id < size_; ++id)
         {
@@ -73,8 +54,7 @@ public:
 
     Matrix(const Matrix& rhs)
     :   detail::Buffer<T>(rhs.used_),
-        rows_(rhs.rows_),
-        cols_(rhs.cols_)
+        dim_(rhs.dim_)
     {
         while (used_ < rhs.used_) 
         {
@@ -92,50 +72,63 @@ public:
 
     template<typename U>
     Matrix (const Matrix<U>& other)
-    :   detail::Buffer<T>(other.getRows() * other.getCols()),
-        rows_(other.getRows()),
-        cols_(other.getCols())
+    :   detail::Buffer<T>(other.getDim() * other.getDim()),
+        dim_(other.getDim())
     {
-        for (size_t i = 0; i < rows_; ++i)
+        for (size_t i = 0; i < dim_; ++i)
         {
-            for (size_t j = 0; j < cols_; ++j)
+            for (size_t j = 0; j < dim_; ++j)
             {
-                at(i, j) = static_cast<T>(other.at(i, j));
+                detail::construct(data_ + used_, static_cast<T>(other.at(i, j)));
+                used_ += 1;
             }
         }
     }
 
     const detail::ProxyRow<T> operator[] (size_t index) const
     {
-        return detail::ProxyRow<T>(data_ + index * cols_);
+        if (index * dim_ >= size_)
+        {
+            throw std::out_of_range("Matrix index out of bounds");
+        }
+
+        return detail::ProxyRow<T>(data_ + index * dim_);
     }
 
     detail::ProxyRow<T> operator[] (size_t index)
     {
-        return detail::ProxyRow<T>(data_ + index * cols_);
+        if (index * dim_ >= size_)
+        {
+            throw std::out_of_range("Matrix index out of bounds");
+        }
+
+        return detail::ProxyRow<T>(data_ + index * dim_);
     }
 
     T& at(size_t row, size_t col) 
     {
-        return data_[row * cols_ + col];
+        if (row >= dim_ || col >= dim_)
+        {
+            throw std::out_of_range("Matrix index out of bounds");
+        }
+
+        return data_[row * dim_ + col];
     }
 
     const T& at(size_t row, size_t col) const 
     {
-        return data_[row * cols_ + col];
+        if (row >= dim_ || col >= dim_)
+        {
+            throw std::out_of_range("Matrix index out of bounds");
+        }
+
+        return data_[row * dim_ + col];
     }
 
-    size_t getRows() const { return rows_; }
-
-    size_t getCols() const { return cols_; }
+    size_t getDim() const { return dim_; }
 
     double det() const
     {
-        if (rows_ != cols_)
-        {
-            std::cerr << "can't count determinant!";
-            return 0;
-        }
 #ifdef ENABLE_LOGGING 
         dump();
 #endif
@@ -152,7 +145,7 @@ public:
 #endif
         double det = 1;
 
-        for (size_t i = 0; i < cols_; ++i)
+        for (size_t i = 0; i < dim_; ++i)
         {
             det *= matrixCopy.at(i, i);
         }
@@ -162,7 +155,7 @@ public:
     
     bool gaussianElimination(size_t& swapCount)
     {
-        for (size_t iRow = 0; iRow < rows_; ++iRow)
+        for (size_t iRow = 0; iRow < dim_; ++iRow)
         {
             size_t pivotRow = findPivotRow(iRow);
 
@@ -188,9 +181,9 @@ public:
 
     void dump() const
     {
-        for (size_t row = 0; row < rows_; ++row)
+        for (size_t row = 0; row < dim_; ++row)
         {
-            for (size_t col = 0; col < cols_; ++col)
+            for (size_t col = 0; col < dim_; ++col)
             {
                  std::cerr << at(row, col) << " ";
             }
@@ -207,7 +200,7 @@ private:
         if (row1 == row2)
             return;
 
-        for (size_t col = 0; col < cols_; ++col)
+        for (size_t col = 0; col < dim_; ++col)
         {
             std::swap(at(row1, col), at(row2, col));
         }
@@ -219,7 +212,7 @@ private:
 
         T maxElem = std::abs(at(col, col));
 
-        for (size_t iCol = col + 1; iCol < cols_; iCol++)
+        for (size_t iCol = col + 1; iCol < dim_; iCol++)
         {
             T curElem = std::abs(at(iCol, col));
 
@@ -235,11 +228,11 @@ private:
 
     void eliminateColumn(size_t pivotRow) 
     {
-        for (size_t iRow = pivotRow + 1; iRow < rows_; ++iRow)
+        for (size_t iRow = pivotRow + 1; iRow < dim_; ++iRow)
         {
             double factor = at(iRow, pivotRow) / at(pivotRow, pivotRow);
 
-            for (int iCol = pivotRow; iCol < cols_; ++iCol) 
+            for (int iCol = pivotRow; iCol < dim_; ++iCol) 
             {
                 at(iRow, iCol) -= factor * at(pivotRow, iCol);
             }
