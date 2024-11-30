@@ -1,5 +1,8 @@
-build
-conan
-.venv
+build/
+conan/
+.venv/
+.gitignore
+.clangd
+.cache
 
 CMakeUserPresets.json 

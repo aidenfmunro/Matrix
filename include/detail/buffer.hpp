@@ -24,7 +24,7 @@ protected:
 protected:
     Buffer(size_t size = 0)
     :   data_((size == 0) ? nullptr
-                          : static_cast<T *>(::operator new(sizeof(T) * size))),
+                          : static_cast<T*>(::operator new(sizeof(T) * size))),
         size_(size) {}
 
     Buffer(const Buffer& ) = delete;

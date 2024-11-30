@@ -3,6 +3,8 @@ project(Matrix)
 
 option(ENABLE_LOGGING "Enable logging output to console" OFF)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
+
 find_package(GTest REQUIRED)
 
 add_executable(matrix.x main.cpp)

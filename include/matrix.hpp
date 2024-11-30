@@ -79,7 +79,7 @@ public:
         {
             for (size_t j = 0; j < dim_; ++j)
             {
-                detail::construct(data_ + used_, static_cast<T>(other.at(i, j)));
+                detail::construct(data_ + used_, static_cast<T>(other[i][j]));
                 used_ += 1;
             }
         }
@@ -105,26 +105,18 @@ public:
         return detail::ProxyRow<T>(data_ + index * dim_);
     }
 
+private:
     T& at(size_t row, size_t col) 
     {
-        if (row >= dim_ || col >= dim_)
-        {
-            throw std::out_of_range("Matrix index out of bounds");
-        }
-
         return data_[row * dim_ + col];
     }
 
     const T& at(size_t row, size_t col) const 
     {
-        if (row >= dim_ || col >= dim_)
-        {
-            throw std::out_of_range("Matrix index out of bounds");
-        }
-
         return data_[row * dim_ + col];
     }
 
+public:
     size_t getDim() const { return dim_; }
 
     double det() const
@@ -147,7 +139,7 @@ public:
 
         for (size_t i = 0; i < dim_; ++i)
         {
-            det *= matrixCopy.at(i, i);
+            det *= matrixCopy[i][i];
         }
 
         return (swapCount % 2 == 0) ? det : -det;
