@@ -62,7 +62,7 @@ protected:
                 data_[i].~T();
             }
 
-            operator delete(data_);
+            ::operator delete(data_);
         }
     }
 };

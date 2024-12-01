@@ -198,7 +198,7 @@ private:
         }
     }
 
-    size_t findPivotRow(size_t col)
+    size_t findPivotRow(size_t col) const 
     {
         size_t maxRow = col;
 
